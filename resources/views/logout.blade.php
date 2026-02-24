@@ -82,7 +82,7 @@
             createClient
         } from 'https://esm.sh/@supabase/supabase-js';
 
-        const supabase = createClient('{{ env('SUPABASE_URL') }}', '{{ env('SUPABASE_ANON_KEY') }}');
+        const supabase = createClient('{{ config('services.supabase.url') }}', '{{ config('services.supabase.anon_key') }}');
         console.log('Supabase client criado para logout');
         async function performLogout() {
             try {

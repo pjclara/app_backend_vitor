@@ -11,9 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias([
-            'supabase' => \App\Http\Middleware\SupabaseAuth::class,
-        ]);
+        $middleware->redirectGuestsTo('/login');
 
         $middleware->encryptCookies(except: [
             'sb_token',

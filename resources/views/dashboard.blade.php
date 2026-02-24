@@ -9,68 +9,34 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
         .header {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: white; padding: 20px; border-radius: 8px;
+            margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .user-info { display: flex; justify-content: space-between; align-items: center; }
         .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; margin-bottom: 20px;
         }
         .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
+            background: white; padding: 20px; border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .card h3 {
-            margin: 0 0 10px 0;
-            color: #666;
-            font-size: 14px;
-        }
-        .card p {
-            margin: 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
+        .card h3 { margin: 0 0 10px 0; color: #666; font-size: 14px; }
+        .card p { margin: 0; font-size: 24px; font-weight: bold; color: #333; }
         .logout-btn {
-            background-color: #dc3545;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
+            background-color: #dc3545; color: white; padding: 8px 16px;
+            border: none; border-radius: 4px; cursor: pointer;
         }
-        .logout-btn:hover {
-            background-color: #c82333;
-        }
+        .logout-btn:hover { background-color: #c82333; }
         .user-details {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
+            background: white; padding: 20px; border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         pre {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            overflow-x: auto;
+            background: #f8f9fa; padding: 15px; border-radius: 4px;
+            overflow-x: auto; font-size: 13px;
         }
     </style>
 </head>
@@ -79,122 +45,74 @@
         <div class="header">
             <div class="user-info">
                 <div>
-                    <h1>🏠 Dashboard</h1>
-                    <p>Bem-vindo ao painel de controle!</p>
+                    <h1>Dashboard</h1>
+                    <p>Bem-vindo, {{ Auth::user()->nome ?: Auth::user()->email }}!</p>
                 </div>
                 <div>
-                    <button onclick="performLogout()" class="logout-btn">🚪 Logout</button>
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="logout-btn">Logout</button>
+                    </form>
                 </div>
             </div>
         </div>
 
         <div class="cards">
             <div class="card">
-                <h3>👤 Status do Usuário</h3>
-                <p id="user-status">Carregando...</p>
+                <h3>Email</h3>
+                <p style="font-size: 16px;">{{ Auth::user()->email }}</p>
             </div>
             <div class="card">
-                <h3>🔑 Token Status</h3>
-                <p id="token-status">Verificando...</p>
+                <h3>ID (Supabase)</h3>
+                <p style="font-size: 14px; word-break: break-all;">{{ Auth::user()->id }}</p>
             </div>
             <div class="card">
-                <h3>⏰ Sessão</h3>
-                <p id="session-time">Ativa</p>
+                <h3>Role</h3>
+                <p>{{ Auth::user()->role }}</p>
             </div>
+            @if(Auth::user()->nome)
             <div class="card">
-                <h3>🔧 Ações</h3>
-                <p><a href="/test-auth" style="color: #007bff;">Testar Auth</a></p>
+                <h3>Nome</h3>
+                <p style="font-size: 16px;">{{ Auth::user()->nome }}</p>
             </div>
+            @endif
+            @if(Auth::user()->escola_instituicao)
+            <div class="card">
+                <h3>Escola / Instituicao</h3>
+                <p style="font-size: 16px;">{{ Auth::user()->escola_instituicao }}</p>
+            </div>
+            @endif
+            @if(Auth::user()->ano_escolaridade)
+            <div class="card">
+                <h3>Ano de Escolaridade</h3>
+                <p>{{ Auth::user()->ano_escolaridade }}º</p>
+            </div>
+            @endif
         </div>
 
         <div class="user-details">
-            <h3>📋 Detalhes do Usuário (Supabase)</h3>
-            <div id="user-info">
-                @if(isset($user))
-                    <p><strong>Dados do Token JWT:</strong></p>
-                    <pre>{{ json_encode($user, JSON_PRETTY_PRINT) }}</pre>
-                @else
-                    <p>❌ Dados do usuário não encontrados</p>
-                @endif
-            </div>
+            <h3>Dados completos do JWT</h3>
+            <pre>{{ json_encode(Auth::user()->getClaims(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
         </div>
     </div>
 
     <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js';
+    const supabase = createClient('{{ config('services.supabase.url') }}', '{{ config('services.supabase.anon_key') }}');
 
-    const supabase = createClient('{{ env('SUPABASE_URL') }}', '{{ env('SUPABASE_ANON_KEY') }}');
-
-    async function loadUserInfo() {
+    // O logout no Supabase JS é feito pelo form POST ao Laravel,
+    // mas também limpamos o lado do cliente
+    document.querySelector('form[action="{{ route('logout') }}"]').addEventListener('submit', async function(e) {
         try {
-            // Verificar sessão do Supabase
-            const { data: { session } } = await supabase.auth.getSession();
-
-            console.log('Sessão atual:', session);
-            
-            if (session) {
-                document.getElementById('user-status').textContent = session.user.email;
-                document.getElementById('token-status').textContent = '✅ Válido';
-                document.getElementById('session-time').textContent = new Date(session.expires_at * 1000).toLocaleString();
-            } else {
-                document.getElementById('user-status').textContent = '❌ Sem sessão';
-                document.getElementById('token-status').textContent = '❌ Inválido';
-            }
-        } catch (error) {
-            console.error('Erro ao carregar dados do usuário:', error);
-            document.getElementById('user-status').textContent = '❌ Erro';
-        }
-    }
-
-    // Carregar informações ao iniciar a página
-    loadUserInfo();
-
-    // Função de logout direta
-    window.performLogout = async function() {
-        try {
-            // 1. Logout no Supabase
             await supabase.auth.signOut();
-            
-            // 2. Limpar cookies
-            document.cookie = "sb_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-            
-            // 3. Limpar localStorage/sessionStorage
             localStorage.clear();
             sessionStorage.clear();
-            
-            // 4. Limpar sessão Laravel via fetch
-            try {
-                await fetch('/clear-session', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                });
-            } catch (e) {
-                console.warn('Falha ao limpar sessão Laravel:', e);
-            }
-            
-            // 5. Redirecionar
-            window.location.href = '/login';
-            
-        } catch (error) {
-            console.error('Erro no logout:', error);
-            // Mesmo com erro, limpar e redirecionar
             document.cookie = "sb_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-            window.location.href = '/login';
+        } catch (err) {
+            console.warn('Erro ao limpar sessão Supabase:', err);
         }
-    };
+        // O form submit continua normalmente para o Laravel
+    });
     </script>
 </body>
 </html>
-            <h3 class="text-gray-500 text-sm font-medium">Growth</h3>
-            <p class="text-3xl font-bold text-green-600 mt-2">+12.5%</p>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
-        <p class="text-gray-600">No recent activity yet.</p>
-    </div>
-</div>

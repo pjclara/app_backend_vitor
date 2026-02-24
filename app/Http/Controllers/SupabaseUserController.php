@@ -31,10 +31,10 @@ class SupabaseUserController extends Controller
 
         // 1. Criar utilizador no Supabase Auth
         $response = Http::withHeaders([
-            'apikey' => env('SUPABASE_ANON_KEY'),
-            'Authorization' => 'Bearer ' . env('SUPABASE_ANON_KEY'),
+            'apikey' => config('services.supabase.anon_key'),
+            'Authorization' => 'Bearer ' . config('services.supabase.anon_key'),
             'Content-Type' => 'application/json',
-        ])->post(env('SUPABASE_URL') . '/auth/v1/signup', [
+        ])->post(config('services.supabase.url') . '/auth/v1/signup', [
             'email' => $request->email,
             'password' => $request->password,
             'data' => [
@@ -64,11 +64,11 @@ class SupabaseUserController extends Controller
         // 2. Inserir dados na tabela alunos
         if ($userId) {
             $alunoResponse = Http::withHeaders([
-                'apikey' => env('SUPABASE_ANON_KEY'),
-                'Authorization' => 'Bearer ' . env('SUPABASE_SERVICE_ROLE'),
+                'apikey' => config('services.supabase.anon_key'),
+                'Authorization' => 'Bearer ' . config('services.supabase.service_role'),
                 'Content-Type' => 'application/json',
                 'Prefer' => 'return=representation',
-            ])->post(env('SUPABASE_URL') . '/rest/v1/alunos', [
+            ])->post(config('services.supabase.url') . '/rest/v1/alunos', [
                 'id' => $userId,
                 'nome' => $request->nome,
                 'email' => $request->email,
