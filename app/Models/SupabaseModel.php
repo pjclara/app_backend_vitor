@@ -52,7 +52,7 @@ abstract class SupabaseModel extends Model
             return $value;
         }
 
-        return Carbon::instance($value)->toISOString();
+        return Carbon::parse($value)->toISOString();
     }
 
     /**

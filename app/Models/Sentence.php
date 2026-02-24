@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use App\Models\SupabaseModel;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sentence extends SupabaseModel
 {
@@ -28,8 +29,26 @@ class Sentence extends SupabaseModel
     {
         return [
             'id' => 'string',
-            'difficulty' => 'integer'
+            'difficulty' => 'integer',
+            'words_json' => 'array',
         ];
     }
 
+    /**
+     * Palavras desta frase (pivot).
+     */
+    public function sentenceWords(): HasMany
+    {
+        return $this->hasMany(SentenceWord::class, 'sentence_id')->orderBy('word_order');
+    }
+
+    /**
+     * Palavras associadas via many-to-many.
+     */
+    public function words(): BelongsToMany
+    {
+        return $this->belongsToMany(Word::class, 'sentence_words', 'sentence_id', 'word_id')
+            ->withPivot('word_order')
+            ->orderByPivot('word_order');
+    }
 }

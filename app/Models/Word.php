@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use App\Models\SupabaseModel;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Word extends SupabaseModel
 {
@@ -33,4 +34,20 @@ class Word extends SupabaseModel
         ];
     }
 
+    /**
+     * Sílabas desta palavra.
+     */
+    public function wordSyllables(): HasMany
+    {
+        return $this->hasMany(WordSyllable::class, 'word_id')->orderBy('position');
+    }
+
+    /**
+     * Frases que contêm esta palavra.
+     */
+    public function sentences(): BelongsToMany
+    {
+        return $this->belongsToMany(Sentence::class, 'sentence_words', 'word_id', 'sentence_id')
+            ->withPivot('word_order');
+    }
 }

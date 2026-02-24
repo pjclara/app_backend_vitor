@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class SentencesTable
@@ -15,22 +16,45 @@ class SentencesTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID'),
+                TextColumn::make('sentence')
+                    ->label('Frase')
+                    ->limit(60)
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('words_count')
+                    ->label('Palavras')
+                    ->counts('words')
+                    ->sortable(),
                 TextColumn::make('difficulty')
-                    ->numeric()
+                    ->label('Dificuldade')
+                    ->formatStateUsing(fn (int $state): string => match ($state) {
+                        1 => 'Fácil',
+                        2 => 'Médio',
+                        3 => 'Difícil',
+                        default => (string) $state,
+                    })
+                    ->badge()
+                    ->color(fn (int $state): string => match ($state) {
+                        1 => 'success',
+                        2 => 'warning',
+                        3 => 'danger',
+                        default => 'gray',
+                    })
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Criado em')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('difficulty')
+                    ->label('Dificuldade')
+                    ->options([
+                        1 => 'Fácil',
+                        2 => 'Médio',
+                        3 => 'Difícil',
+                    ]),
             ])
             ->recordActions([
                 ViewAction::make(),
@@ -40,6 +64,7 @@ class SentencesTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 }
