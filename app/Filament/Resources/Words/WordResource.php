@@ -24,6 +24,12 @@ class WordResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Palavras';
 
+    protected static ?string $navigationLabel = 'Palavras';
+
+    protected static ?string $modelLabel = 'Palavra';
+
+    protected static ?string $pluralModelLabel = 'Palavras';
+
     public static function form(Schema $schema): Schema
     {
         return WordForm::configure($schema);

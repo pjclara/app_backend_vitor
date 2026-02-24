@@ -24,6 +24,12 @@ class SentenceResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Frases';
 
+    protected static ?string $navigationLabel = 'Frases';
+
+    protected static ?string $modelLabel = 'Frase';
+
+    protected static ?string $pluralModelLabel = 'Frases';
+
     public static function form(Schema $schema): Schema
     {
         return SentenceForm::configure($schema);
