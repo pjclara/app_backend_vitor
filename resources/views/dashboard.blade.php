@@ -129,6 +129,8 @@
         try {
             // Verificar sessão do Supabase
             const { data: { session } } = await supabase.auth.getSession();
+
+            console.log('Sessão atual:', session);
             
             if (session) {
                 document.getElementById('user-status').textContent = session.user.email;

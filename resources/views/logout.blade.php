@@ -87,7 +87,9 @@
         async function performLogout() {
             try {
                 // 1. Logout no Supabase
-                await supabase.auth.signOut();
+                await supabase.auth.signOut({
+                    scope: 'global'
+                });
 
                 // 2. Remover cookies
                 document.cookie = "sb_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
@@ -96,6 +98,9 @@
                 // 3. Limpar localStorage/sessionStorage se houver
                 localStorage.clear();
                 sessionStorage.clear();
+
+                sessionStorage.removeItem('supabase_token');
+
 
                 // 4. Limpar sessão Laravel via fetch
                 try {
@@ -108,6 +113,11 @@
                 } catch (e) {
                     console.warn('Falha ao limpar sessão Laravel:', e);
                 }
+
+                const {
+                    data
+                } = await supabase.auth.getSession();
+                console.log(data);
 
                 // 5. Mostrar sucesso
                 document.getElementById('status').className = 'status success';
@@ -122,13 +132,13 @@
 
             } catch (error) {
                 console.error('Erro no logout:', error);
-                
+
                 // Mesmo com erro, fazer limpeza básica
                 document.cookie = "sb_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
                 document.cookie = "laravel_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
                 localStorage.clear();
                 sessionStorage.clear();
-                
+
                 document.getElementById('status').className = 'status success';
                 document.getElementById('status').innerHTML =
                     '✅ Logout realizado<br><small>(com alguns avisos - redirecionando...)</small>';

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AlunoController;
 use App\Http\Controllers\SupabaseUserController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -11,9 +13,13 @@ Route::get('/login', function () {
     return view('login');
 })->name('login');
 
-Route::get('/logout', function () {
-    return view('logout');
-})->name('logout');
+Route::post('/clear-session', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return response()->json(['ok' => true]);
+});
 
 Route::middleware('supabase')->group(function () {
     Route::get('/dashboard', function (Illuminate\Http\Request $request) {
@@ -59,18 +65,23 @@ Route::get('/dashboard-test', function () {
 Route::post('/save-token', function (Illuminate\Http\Request $request) {
     $token = $request->input('token');
     $user = $request->input('user');
-    
+
     if ($token) {
         // Salvar na sessão como backup
         session(['supabase_token' => $token]);
         session(['supabase_user' => $user]);
-        
+
         return response()->json(['success' => true, 'message' => 'Token salvo na sessão']);
     }
-    
+
     return response()->json(['success' => false, 'message' => 'Token não fornecido'], 400);
 })->name('save-token');
 
 Route::get('/debug-login', function () {
     return view('debug-login');
 })->name('debug-login');
+
+Route::middleware('supabase')->group(function () {
+    Route::get('/alunos/criar', [AlunoController::class, 'create']);
+    Route::post('/alunos', [AlunoController::class, 'store']);
+});

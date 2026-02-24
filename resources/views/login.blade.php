@@ -18,7 +18,14 @@
             createClient
         } from 'https://esm.sh/@supabase/supabase-js';
 
-        const supabase = createClient('{{ env('SUPABASE_URL') }}', '{{ env('SUPABASE_ANON_KEY') }}');
+        const supabase = createClient(
+            '{{ env('SUPABASE_URL') }}',
+            '{{ env('SUPABASE_ANON_KEY') }}', {
+                auth: {
+                    persistSession: true
+                }
+            }
+        );
 
         async function login() {
             const {
@@ -35,6 +42,7 @@
             }
 
             console.log('Login successful:', data);
+
 
             const token = data.session.access_token;
 
@@ -55,6 +63,8 @@
                 alert('Erro ao guardar sessão. Tente novamente.');
                 return;
             }
+
+            
 
             window.location.href = "/dashboard";
         }

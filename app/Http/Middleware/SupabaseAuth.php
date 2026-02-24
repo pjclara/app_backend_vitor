@@ -30,11 +30,13 @@ class SupabaseAuth
         // Fallback: verificar na sessão
         if (!$token) {
             $token = session('supabase_token');
+            Log::info('SupabaseAuth: Token da sessão ' . ($token ? 'encontrado' : 'não encontrado'));
+            if (!$token) {
+                log::warning('SupabaseAuth: Nenhum token encontrado, redirecionando para login');
+                return redirect('/login');
+            }
         }
 
-        if (!$token) {
-            return redirect('/login');
-        }
 
         try {
             // Buscar JWKS do Supabase (com cache de 1 hora)
@@ -58,6 +60,7 @@ class SupabaseAuth
 
             $request->attributes->set('user', $decoded);
 
+            
         } catch (\Exception $e) {
             Log::error('SupabaseAuth: ' . $e->getMessage());
 

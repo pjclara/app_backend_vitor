@@ -14,6 +14,9 @@ class SupabaseUserController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|min:6',
+            'nome' => 'required|string|max:255',
+            'escola_instituicao' => 'required|string|max:255',
+            'ano_escolaridade' => 'required|integer|min:1|max:12',
         ]);
 
         if ($validator->fails()) {
@@ -23,10 +26,10 @@ class SupabaseUserController extends Controller
                     'errors' => $validator->errors()
                 ], 422);
             }
-            return back()->withErrors($validator);
+            return back()->withErrors($validator)->withInput();
         }
 
-        // Criar usuário no Supabase usando endpoint público
+        // 1. Criar utilizador no Supabase Auth
         $response = Http::withHeaders([
             'apikey' => env('SUPABASE_ANON_KEY'),
             'Authorization' => 'Bearer ' . env('SUPABASE_ANON_KEY'),
@@ -35,7 +38,9 @@ class SupabaseUserController extends Controller
             'email' => $request->email,
             'password' => $request->password,
             'data' => [
-                'name' => $request->name ?? '',
+                'nome' => $request->nome,
+                'escola_instituicao' => $request->escola_instituicao,
+                'ano_escolaridade' => (int) $request->ano_escolaridade,
             ]
         ]);
 
@@ -45,25 +50,56 @@ class SupabaseUserController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Erro ao criar usuário',
+                    'message' => 'Erro ao criar utilizador',
                     'error' => $error
                 ], 400);
             }
             
-            return back()->withErrors(['error' => 'Erro ao criar usuário: ' . ($error['message'] ?? 'Erro desconhecido')]);
+            return back()->withErrors(['error' => 'Erro ao criar utilizador: ' . ($error['message'] ?? 'Erro desconhecido')])->withInput();
         }
 
-        $user = $response->json();
+        $authUser = $response->json();
+        $userId = $authUser['id'] ?? ($authUser['user']['id'] ?? null);
+
+        // 2. Inserir dados na tabela alunos
+        if ($userId) {
+            $alunoResponse = Http::withHeaders([
+                'apikey' => env('SUPABASE_ANON_KEY'),
+                'Authorization' => 'Bearer ' . env('SUPABASE_SERVICE_ROLE'),
+                'Content-Type' => 'application/json',
+                'Prefer' => 'return=representation',
+            ])->post(env('SUPABASE_URL') . '/rest/v1/alunos', [
+                'id' => $userId,
+                'nome' => $request->nome,
+                'email' => $request->email,
+                'escola_instituicao' => $request->escola_instituicao,
+                'ano_escolaridade' => (int) $request->ano_escolaridade,
+            ]);
+
+            if ($alunoResponse->failed()) {
+                $alunoError = $alunoResponse->json();
+                
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Utilizador auth criado, mas erro ao guardar dados do aluno',
+                        'error' => $alunoError
+                    ], 400);
+                }
+                
+                return back()->withErrors(['error' => 'Utilizador criado, mas erro ao guardar dados do aluno: ' . ($alunoError['message'] ?? json_encode($alunoError))])->withInput();
+            }
+        }
         
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Usuário criado com sucesso!',
-                'user' => $user
+                'message' => 'Aluno criado com sucesso!',
+                'user' => $authUser
             ]);
         }
 
-        return back()->with('success', 'Usuário criado com sucesso!');
+        return back()->with('success', 'Aluno criado com sucesso!');
     }
 
     public function testConnection()
