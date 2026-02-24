@@ -104,7 +104,7 @@
         <div class="form-group">
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" value="{{ old('nome') }}"
-                placeholder="Nome completo do aluno" required>
+                placeholder="Nome completo do user" required>
             @error('nome')
                 <div class="error">{{ $message }}</div>
             @enderror
@@ -171,6 +171,10 @@
             const password = document.getElementById('password').value;
             const escola_instituicao = document.getElementById('escola_instituicao').value.trim();
             const ano_escolaridade = document.getElementById('ano_escolaridade').value;
+            const role = 'user'; // Definindo o role como 'user' para todos os usuários criados por este formulário
+            const school_id = null; // Ou defina um ID de escola padrão se necessário
+            const school_year = ano_escolaridade + 'º ano'; // Exemplo de formatação do ano escolaridade
+
 
             if (!nome || !email || !password || !escola_instituicao || !ano_escolaridade) {
                 alert('Por favor, preencha todos os campos obrigatórios');
@@ -188,8 +192,10 @@
                     options: {
                         data: {
                             nome: nome,
-                            escola_instituicao: escola_instituicao,
-                            ano_escolaridade: parseInt(ano_escolaridade)
+                            role: role,
+                            school_id: school_id,
+                            school_year: school_year
+
                         }
                     }
                 });
@@ -207,8 +213,8 @@
 
                 console.log('Utilizador auth criado:', data.user.id);
 
-                // 2. Inserir dados na tabela alunos
-                await fetch('/alunos', {
+                // 2. Inserir dados na tabela users
+                await fetch('/users', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -217,22 +223,23 @@
                     body: JSON.stringify({
                         user_id: data.user.id,
                         nome: nome,
+                        email: email,
                         escola_instituicao: escola_instituicao,
-                        ano_escolaridade: ano_escolaridade
+                        ano_escolaridade: parseInt(ano_escolaridade)
                     })
                 });
 
-                const alunoData = await response.json();
-                const alunoError = alunoData.error;
+                const userData = await response.json();
+                const userError = userData.error;
 
-                if (alunoError) {
-                    console.error('Erro ao inserir aluno:', alunoError);
-                    alert('⚠️ Utilizador auth criado, mas erro ao guardar dados do aluno: ' + alunoError.message);
+                if (userError) {
+                    console.error('Erro ao inserir user:', userError);
+                    alert('⚠️ Utilizador auth criado, mas erro ao guardar dados do user: ' + userError.message);
                     return;
                 }
 
-                console.log('Aluno inserido:', alunoData);
-                alert('✅ Aluno criado com sucesso!\nNome: ' + nome + '\nEmail: ' + email + '\nEscola: ' +
+                console.log('user inserido:', userData);
+                alert('✅ user criado com sucesso!\nNome: ' + nome + '\nEmail: ' + email + '\nEscola: ' +
                     escola_instituicao + '\nAno: ' + ano_escolaridade + 'º');
 
                 // Limpar formulário

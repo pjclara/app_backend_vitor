@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Auth\SupabaseGuard;
 use App\Auth\SupabaseUserProvider;
+use App\Database\SupabasePostgresConnector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,7 +15,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Override the pgsql connector to support Supabase pooler reference
+        $this->app->bind('db.connector.pgsql', function () {
+            return new SupabasePostgresConnector();
+        });
     }
 
     /**

@@ -61,14 +61,14 @@ class SupabaseUserController extends Controller
         $authUser = $response->json();
         $userId = $authUser['id'] ?? ($authUser['user']['id'] ?? null);
 
-        // 2. Inserir dados na tabela alunos
+        // 2. Inserir dados na tabela users
         if ($userId) {
-            $alunoResponse = Http::withHeaders([
+            $userResponse = Http::withHeaders([
                 'apikey' => config('services.supabase.anon_key'),
                 'Authorization' => 'Bearer ' . config('services.supabase.service_role'),
                 'Content-Type' => 'application/json',
                 'Prefer' => 'return=representation',
-            ])->post(config('services.supabase.url') . '/rest/v1/alunos', [
+            ])->post(config('services.supabase.url') . '/rest/v1/users', [
                 'id' => $userId,
                 'nome' => $request->nome,
                 'email' => $request->email,
@@ -76,30 +76,30 @@ class SupabaseUserController extends Controller
                 'ano_escolaridade' => (int) $request->ano_escolaridade,
             ]);
 
-            if ($alunoResponse->failed()) {
-                $alunoError = $alunoResponse->json();
+            if ($userResponse->failed()) {
+                $userError = $userResponse->json();
                 
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Utilizador auth criado, mas erro ao guardar dados do aluno',
-                        'error' => $alunoError
+                        'message' => 'Utilizador auth criado, mas erro ao guardar dados do user',
+                        'error' => $userError
                     ], 400);
                 }
                 
-                return back()->withErrors(['error' => 'Utilizador criado, mas erro ao guardar dados do aluno: ' . ($alunoError['message'] ?? json_encode($alunoError))])->withInput();
+                return back()->withErrors(['error' => 'Utilizador criado, mas erro ao guardar dados do user: ' . ($userError['message'] ?? json_encode($userError))])->withInput();
             }
         }
         
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Aluno criado com sucesso!',
+                'message' => 'user criado com sucesso!',
                 'user' => $authUser
             ]);
         }
 
-        return back()->with('success', 'Aluno criado com sucesso!');
+        return back()->with('success', 'user criado com sucesso!');
     }
 
     public function testConnection()
