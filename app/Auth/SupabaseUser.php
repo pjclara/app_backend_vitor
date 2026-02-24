@@ -2,9 +2,11 @@
 
 namespace App\Auth;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\Authenticatable;
 
-class SupabaseUser implements Authenticatable
+class SupabaseUser implements Authenticatable, FilamentUser
 {
     protected string $id;
     protected string $email;
@@ -115,11 +117,27 @@ class SupabaseUser implements Authenticatable
     }
 
     /**
+     * Filament: verificar se o utilizador pode aceder ao painel.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Todos os utilizadores autenticados podem aceder
+        return true;
+    }
+
+    /**
      * Permite aceder a propriedades como $user->email, $user->nome, etc.
      */
     public function __get(string $name): mixed
     {
-        return match ($name) {
+        return $this->getAttributeValue($name);
+    }
+
+    // --- Eloquent-like methods required by Filament ---
+
+    public function getAttributeValue(string $key): mixed
+    {
+        return match ($key) {
             'id' => $this->id,
             'email' => $this->email,
             'role' => $this->role,
@@ -128,7 +146,46 @@ class SupabaseUser implements Authenticatable
             'escola_instituicao' => $this->getEscolaInstituicao(),
             'ano_escolaridade' => $this->getAnoEscolaridade(),
             'token' => $this->token,
-            default => $this->userMetadata[$name] ?? $this->claims[$name] ?? null,
+            'avatar_url' => null,
+            default => $this->userMetadata[$key] ?? $this->claims[$key] ?? null,
         };
+    }
+
+    public function getAttribute(string $key): mixed
+    {
+        return $this->getAttributeValue($key);
+    }
+
+    public function getKey(): string
+    {
+        return $this->id;
+    }
+
+    public function getKeyName(): string
+    {
+        return 'id';
+    }
+
+    public function getRouteKey(): string
+    {
+        return $this->id;
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'id';
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'email' => $this->email,
+            'role' => $this->role,
+            'nome' => $this->getNome(),
+            'name' => $this->getNome(),
+            'escola_instituicao' => $this->getEscolaInstituicao(),
+            'ano_escolaridade' => $this->getAnoEscolaridade(),
+        ];
     }
 }

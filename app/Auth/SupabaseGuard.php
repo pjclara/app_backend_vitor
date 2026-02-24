@@ -5,9 +5,10 @@ namespace App\Auth;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
 
-class SupabaseGuard implements Guard
+class SupabaseGuard implements Guard, StatefulGuard
 {
     use GuardHelpers;
 
@@ -50,14 +51,16 @@ class SupabaseGuard implements Guard
     /**
      * Login: guardar o utilizador na sessão.
      */
-    public function login(SupabaseUser $user): void
+    public function login(Authenticatable $user, $remember = false): void
     {
         $this->user = $user;
 
-        session([
-            'supabase_auth_user' => $user->getClaims(),
-            'supabase_token' => $user->getToken(),
-        ]);
+        if ($user instanceof SupabaseUser) {
+            session([
+                'supabase_auth_user' => $user->getClaims(),
+                'supabase_token' => $user->getToken(),
+            ]);
+        }
     }
 
     /**
@@ -72,5 +75,33 @@ class SupabaseGuard implements Guard
         session()->forget('supabase_user');
         session()->invalidate();
         session()->regenerateToken();
+    }
+
+    // --- StatefulGuard methods (needed by Filament) ---
+
+    public function attempt(array $credentials = [], $remember = false): bool
+    {
+        // A autenticação é feita via Supabase API, não por credenciais locais
+        return false;
+    }
+
+    public function once(array $credentials = []): bool
+    {
+        return false;
+    }
+
+    public function loginUsingId($id, $remember = false): Authenticatable|bool
+    {
+        return false;
+    }
+
+    public function onceUsingId($id): Authenticatable|bool
+    {
+        return false;
+    }
+
+    public function viaRemember(): bool
+    {
+        return false;
     }
 }
