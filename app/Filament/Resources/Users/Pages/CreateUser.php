@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\Pages;
+namespace App\Filament\Resources\Users\Pages;
 
-use App\Filament\Resources\UserResource;
+use App\Filament\Resources\Users\UserResource;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Http;
 
@@ -15,6 +15,12 @@ class CreateUser extends CreateRecord
      */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $password = $data['password'] ?? null;
+        
+        if (!$password) {
+            throw new \Exception('Password is required');
+        }
+
         // Criar utilizador no Supabase Auth
         $response = Http::withHeaders([
             'apikey' => config('services.supabase.anon_key'),
@@ -22,7 +28,7 @@ class CreateUser extends CreateRecord
             'Content-Type' => 'application/json',
         ])->post(config('services.supabase.url') . '/auth/v1/admin/users', [
             'email' => $data['email'],
-            'password' => $data['password'],
+            'password' => $password,
             'email_confirm' => true,
             'user_metadata' => [
                 'name' => $data['name'],
@@ -39,6 +45,9 @@ class CreateUser extends CreateRecord
 
         // Usar o UUID do Supabase como ID do utilizador local
         $data['id'] = $supabaseUser['id'];
+        
+        // Remover password antes de guardar na base de dados local
+        unset($data['password']);
 
         return $data;
     }

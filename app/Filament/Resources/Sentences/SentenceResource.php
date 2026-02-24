@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class SentenceResource extends Resource
 {
@@ -29,6 +30,9 @@ class SentenceResource extends Resource
     protected static ?string $modelLabel = 'Frase';
 
     protected static ?string $pluralModelLabel = 'Frases';
+
+    protected static UnitEnum|string|null $navigationGroup = 'Gestão de Conteúdos';
+
 
     public static function form(Schema $schema): Schema
     {
