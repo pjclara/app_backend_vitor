@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Enums\UserRole;
 use App\Filament\Resources\UserResource\Pages;
-use App\Models\School;
 use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -17,7 +16,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Http;
 
 class UserResource extends Resource
 {
@@ -90,13 +88,16 @@ class UserResource extends Resource
 
                 TextColumn::make('role')
                     ->label('Papel')
-                    ->formatStateUsing(fn (string $state): string => UserRole::tryFrom($state)?->label() ?? $state)
+                    ->formatStateUsing(fn ($state): string => $state instanceof UserRole ? $state->label() : UserRole::tryFrom($state)?->label() ?? $state)
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'admin' => 'danger',
-                        'professor' => 'warning',
-                        'aluno' => 'success',
-                        default => 'gray',
+                    ->color(function ($state): string {
+                        $value = $state instanceof UserRole ? $state->value : $state;
+                        return match ($value) {
+                            'admin' => 'danger',
+                            'professor' => 'warning',
+                            'aluno' => 'success',
+                            default => 'gray',
+                        };
                     })
                     ->sortable(),
 
