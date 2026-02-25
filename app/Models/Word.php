@@ -35,11 +35,21 @@ class Word extends SupabaseModel
     }
 
     /**
-     * Sílabas desta palavra.
+     * Sílabas desta palavra (junction).
      */
     public function wordSyllables(): HasMany
     {
         return $this->hasMany(WordSyllable::class, 'word_id')->orderBy('position');
+    }
+
+    /**
+     * Sílabas desta palavra (many-to-many).
+     */
+    public function syllables(): BelongsToMany
+    {
+        return $this->belongsToMany(Syllable::class, 'word_syllables', 'word_id', 'syllable_id')
+            ->withPivot('position')
+            ->orderByPivot('position');
     }
 
     /**

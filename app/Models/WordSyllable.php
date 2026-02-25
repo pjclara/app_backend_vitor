@@ -17,9 +17,8 @@ class WordSyllable extends SupabaseModel
      */
     protected $fillable = [
         'word_id',
-        'syllable',
+        'syllable_id',
         'position',
-        'audio_url'
     ];
 
     /**
@@ -30,6 +29,7 @@ class WordSyllable extends SupabaseModel
         return [
             'id' => 'string',
             'word_id' => 'string',
+            'syllable_id' => 'string',
             'position' => 'integer'
         ];
     }
@@ -42,4 +42,11 @@ class WordSyllable extends SupabaseModel
         return $this->belongsTo(Word::class, 'word_id');
     }
 
+    /**
+     * Get the syllable that owns the WordSyllable.
+     */
+    public function syllable(): BelongsTo
+    {
+        return $this->belongsTo(Syllable::class, 'syllable_id');
+    }
 }

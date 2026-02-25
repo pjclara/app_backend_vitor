@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Sentence;
 use App\Models\SentenceWord;
+use App\Models\Syllable;
 use App\Models\Word;
 use App\Models\WordSyllable;
 use Illuminate\Support\Facades\DB;
@@ -61,7 +62,7 @@ class SentenceProcessorService
                     'word_order' => $order + 1,
                 ]);
 
-                $syllables = $word->syllables ?? implode('-', $this->splitter->split($normalizedWord));
+                $syllables = $word->wordSyllables->map(fn ($ws) => $ws->syllable->syllable)->implode('-');
 
                 $wordsData[] = [
                     'word' => $normalizedWord,
@@ -94,11 +95,17 @@ class SentenceProcessorService
             'difficulty' => $difficulty,
         ]);
 
-        // Criar as sílabas na tabela word_syllables
-        foreach ($syllables as $position => $syllable) {
+        // Criar as sílabas e as relações
+        foreach ($syllables as $position => $syllableText) {
+            // Procurar ou criar a sílaba
+            $syllableModel = Syllable::firstOrCreate([
+                'syllable' => $syllableText,
+            ]);
+
+            // Criar a relação word_syllables
             WordSyllable::create([
                 'word_id' => $wordModel->id,
-                'syllable' => $syllable,
+                'syllable_id' => $syllableModel->id,
                 'position' => $position + 1,
             ]);
         }

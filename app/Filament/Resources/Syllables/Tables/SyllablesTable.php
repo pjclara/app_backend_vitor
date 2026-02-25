@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Words\Tables;
+namespace App\Filament\Resources\Syllables\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -9,19 +9,16 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class WordsTable
+class SyllablesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('word')
+                TextColumn::make('syllable')
                     ->searchable(),
                 TextColumn::make('audio_url')
                     ->searchable(),
-                TextColumn::make('difficulty')
-                    ->numeric()
-                    ->sortable(),
             ])
             ->filters([
                 //
