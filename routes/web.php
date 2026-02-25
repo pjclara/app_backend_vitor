@@ -6,9 +6,11 @@ use App\Http\Controllers\SupabaseUserController;
 use Illuminate\Support\Facades\Route;
 
 // --- Páginas públicas ---
+
+// redirect da raiz para o dashboard (ou login, se não autenticado)
 Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+    return redirect('/admin');
+});
 
 // --- Auth (guests only) ---
 Route::middleware('guest:supabase')->group(function () {
