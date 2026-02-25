@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use App\Enums\DictationDifficulty;
 use App\Models\SupabaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Sentence extends SupabaseModel
+class Exercise extends SupabaseModel
 {
     /**
      * The table associated with the model.
      */
-    protected $table = 'sentences';
+    protected $table = 'exercises';
 
     /**
      * The attributes that are mass assignable.
@@ -19,7 +20,9 @@ class Sentence extends SupabaseModel
     protected $fillable = [
         'sentence',
         'words_json',
-        'difficulty'
+        'difficulty',
+        'content',
+        'number'
     ];
 
     /**
@@ -29,17 +32,17 @@ class Sentence extends SupabaseModel
     {
         return [
             'id' => 'string',
-            'difficulty' => 'integer',
+            'difficulty' => DictationDifficulty::class,
             'words_json' => 'array',
         ];
     }
 
     /**
-     * Palavras desta frase (pivot).
+     * Palavras deste exercício (pivot).
      */
-    public function sentenceWords(): HasMany
+    public function exerciseWords(): HasMany
     {
-        return $this->hasMany(SentenceWord::class, 'sentence_id')->orderBy('word_order');
+        return $this->hasMany(ExerciseWord::class, 'exercise_id')->orderBy('word_order');
     }
 
     /**
@@ -47,7 +50,7 @@ class Sentence extends SupabaseModel
      */
     public function words(): BelongsToMany
     {
-        return $this->belongsToMany(Word::class, 'sentence_words', 'sentence_id', 'word_id')
+        return $this->belongsToMany(Word::class, 'exercise_words', 'exercise_id', 'word_id')
             ->withPivot('word_order')
             ->orderByPivot('word_order');
     }

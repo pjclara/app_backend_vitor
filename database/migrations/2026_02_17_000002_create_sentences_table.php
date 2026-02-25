@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sentences', function (Blueprint $table) {
+        Schema::create('exercises', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->text('sentence');
             $table->text('words_json')->nullable();
@@ -19,6 +19,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('sentences');
+        Schema::dropIfExists('exercises');
     }
 };

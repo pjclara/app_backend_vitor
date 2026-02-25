@@ -1,36 +1,38 @@
 <?php
 
-namespace App\Filament\Resources\Sentences\Schemas;
+namespace App\Filament\Resources\Exercises\Schemas;
 
+use App\Enums\DictationDifficulty;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Schemas\Schema;
 
-class SentenceInfolist
+class ExerciseInfolist
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
                 TextEntry::make('sentence')
-                    ->label('Frase')
+                    ->label('Exercício')
                     ->columnSpanFull(),
+                TextEntry::make('content')
+                    ->label('Conteúdo')
+                    ->columnSpanFull()
+                    ->visible(fn ($state) => filled($state)),
+                TextEntry::make('number')
+                    ->label('Número'),
                 TextEntry::make('difficulty')
                     ->label('Dificuldade')
-                    ->formatStateUsing(fn (int $state): string => match ($state) {
-                        1 => 'Fácil',
-                        2 => 'Médio',
-                        3 => 'Difícil',
-                        default => (string) $state,
-                    })
+                    ->formatStateUsing(fn ($state): string => $state instanceof DictationDifficulty ? $state->label() : (string) $state)
                     ->badge()
-                    ->color(fn (int $state): string => match ($state) {
-                        1 => 'success',
-                        2 => 'warning',
-                        3 => 'danger',
+                    ->color(fn ($state): string => match ($state) {
+                        DictationDifficulty::EASY => 'success',
+                        DictationDifficulty::MEDIUM => 'warning',
+                        DictationDifficulty::HARD => 'danger',
                         default => 'gray',
                     }),
-                RepeatableEntry::make('sentenceWords')
+                RepeatableEntry::make('exerciseWords')
                     ->label('Palavras e Sílabas')
                     ->columnSpanFull()
                     ->schema([

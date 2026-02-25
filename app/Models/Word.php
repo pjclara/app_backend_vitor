@@ -53,11 +53,11 @@ class Word extends SupabaseModel
     }
 
     /**
-     * Frases que contêm esta palavra.
+     * Exercícios que contêm esta palavra.
      */
-    public function sentences(): BelongsToMany
+    public function exercises(): BelongsToMany
     {
-        return $this->belongsToMany(Sentence::class, 'sentence_words', 'word_id', 'sentence_id')
+        return $this->belongsToMany(Exercise::class, 'exercise_words', 'word_id', 'exercise_id')
             ->withPivot('word_order');
     }
 }

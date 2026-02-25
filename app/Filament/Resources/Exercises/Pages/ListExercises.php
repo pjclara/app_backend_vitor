@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\Sentences\Pages;
+namespace App\Filament\Resources\Exercises\Pages;
 
-use App\Filament\Resources\Sentences\SentenceResource;
+use App\Filament\Resources\Exercises\ExerciseResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
-class ListSentences extends ListRecords
+class ListExercises extends ListRecords
 {
-    protected static string $resource = SentenceResource::class;
+    protected static string $resource = ExerciseResource::class;
 
     protected function getHeaderActions(): array
     {

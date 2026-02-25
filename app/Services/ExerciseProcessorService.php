@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\Sentence;
-use App\Models\SentenceWord;
+use App\Models\Exercise;
+use App\Models\ExerciseWord;
 use App\Models\Syllable;
 use App\Models\Word;
 use App\Models\WordSyllable;
 use Illuminate\Support\Facades\DB;
 
-class SentenceProcessorService
+class ExerciseProcessorService
 {
     protected PortugueseSyllableSplitter $splitter;
 
@@ -19,14 +19,14 @@ class SentenceProcessorService
     }
 
     /**
-     * Processa uma frase: divide em palavras e sílabas, guarda tudo nas tabelas.
+     * Processa um exercício: divide em palavras e sílabas, guarda tudo nas tabelas.
      *
-     * @param Sentence $sentence
+     * @param Exercise $exercise
      * @return void
      */
-    public function process(Sentence $sentence): void
+    public function process(Exercise $exercise): void
     {
-        $text = $sentence->sentence;
+        $text = $exercise->sentence;
 
         // Extrair palavras (remover pontuação, manter apenas palavras)
         $rawWords = $this->extractWords($text);
@@ -35,9 +35,17 @@ class SentenceProcessorService
             return;
         }
 
-        DB::transaction(function () use ($sentence, $rawWords) {
+        // Convert enum difficulty to integer for Word model (1=easy, 2=medium, 3=hard)
+        $wordDifficulty = match ($exercise->difficulty?->value ?? 'easy') {
+            'easy' => 1,
+            'medium' => 2,
+            'hard' => 3,
+            default => 1,
+        };
+
+        DB::transaction(function () use ($exercise, $rawWords, $wordDifficulty) {
             // Limpar relações existentes (para caso de edição)
-            SentenceWord::where('sentence_id', $sentence->id)->delete();
+            ExerciseWord::where('exercise_id', $exercise->id)->delete();
 
             $wordsData = [];
 
@@ -52,12 +60,12 @@ class SentenceProcessorService
                 $word = Word::where('word', $normalizedWord)->first();
 
                 if (!$word) {
-                    $word = $this->createWordWithSyllables($normalizedWord, $sentence->difficulty ?? 1);
+                    $word = $this->createWordWithSyllables($normalizedWord, $wordDifficulty);
                 }
 
-                // Criar a relação sentence_words
-                SentenceWord::create([
-                    'sentence_id' => $sentence->id,
+                // Criar a relação exercise_words
+                ExerciseWord::create([
+                    'exercise_id' => $exercise->id,
                     'word_id' => $word->id,
                     'word_order' => $order + 1,
                 ]);
@@ -72,8 +80,8 @@ class SentenceProcessorService
                 ];
             }
 
-            // Atualizar o campo words_json da frase
-            $sentence->update([
+            // Atualizar o campo words_json do exercício
+            $exercise->update([
                 'words_json' => json_encode($wordsData),
             ]);
         });
@@ -114,7 +122,7 @@ class SentenceProcessorService
     }
 
     /**
-     * Extrai palavras de uma frase (remove pontuação).
+     * Extrai palavras de um exercício (remove pontuação).
      *
      * @return array<string>
      */

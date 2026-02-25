@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\Sentences\Pages;
+namespace App\Filament\Resources\Exercises\Pages;
 
-use App\Filament\Resources\Sentences\SentenceResource;
-use App\Services\SentenceProcessorService;
+use App\Filament\Resources\Exercises\ExerciseResource;
+use App\Services\ExerciseProcessorService;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
-class EditSentence extends EditRecord
+class EditExercise extends EditRecord
 {
-    protected static string $resource = SentenceResource::class;
+    protected static string $resource = ExerciseResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -21,11 +21,11 @@ class EditSentence extends EditRecord
     }
 
     /**
-     * Após guardar a frase editada, reprocessa palavras e sílabas.
+     * Após guardar o exercício editado, reprocessa palavras e sílabas.
      */
     protected function afterSave(): void
     {
-        $processor = new SentenceProcessorService();
+        $processor = new ExerciseProcessorService();
         $processor->process($this->record);
     }
 }

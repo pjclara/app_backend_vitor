@@ -5,18 +5,18 @@ namespace App\Models;
 use App\Models\SupabaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SentenceWord extends SupabaseModel
+class ExerciseWord extends SupabaseModel
 {
     /**
      * The table associated with the model.
      */
-    protected $table = 'sentence_words';
+    protected $table = 'exercise_words';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'sentence_id',
+        'exercise_id',
         'word_id',
         'word_order'
     ];
@@ -28,26 +28,25 @@ class SentenceWord extends SupabaseModel
     {
         return [
             'id' => 'string',
-            'sentence_id' => 'string',
+            'exercise_id' => 'string',
             'word_id' => 'string',
             'word_order' => 'integer'
         ];
     }
 
     /**
-     * Get the sentence that owns the SentenceWord.
+     * Get the exercise that owns the ExerciseWord.
      */
-    public function sentence(): BelongsTo
+    public function exercise(): BelongsTo
     {
-        return $this->belongsTo(Sentence::class, 'sentence_id');
+        return $this->belongsTo(Exercise::class, 'exercise_id');
     }
 
     /**
-     * Get the word that owns the SentenceWord.
+     * Get the word that owns the ExerciseWord.
      */
     public function word(): BelongsTo
     {
         return $this->belongsTo(Word::class, 'word_id');
     }
-
 }

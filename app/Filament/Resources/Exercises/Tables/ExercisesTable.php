@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Sentences\Tables;
+namespace App\Filament\Resources\Exercises\Tables;
 
+use App\Enums\DictationDifficulty;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -10,14 +11,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
-class SentencesTable
+class ExercisesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('sentence')
-                    ->label('Frase')
+                    ->label('Exercício')
                     ->limit(60)
                     ->searchable()
                     ->sortable(),
@@ -27,17 +28,12 @@ class SentencesTable
                     ->sortable(),
                 TextColumn::make('difficulty')
                     ->label('Dificuldade')
-                    ->formatStateUsing(fn (int $state): string => match ($state) {
-                        1 => 'Fácil',
-                        2 => 'Médio',
-                        3 => 'Difícil',
-                        default => (string) $state,
-                    })
+                    ->formatStateUsing(fn ($state): string => $state instanceof DictationDifficulty ? $state->label() : (string) $state)
                     ->badge()
-                    ->color(fn (int $state): string => match ($state) {
-                        1 => 'success',
-                        2 => 'warning',
-                        3 => 'danger',
+                    ->color(fn ($state): string => match ($state) {
+                        DictationDifficulty::EASY => 'success',
+                        DictationDifficulty::MEDIUM => 'warning',
+                        DictationDifficulty::HARD => 'danger',
                         default => 'gray',
                     })
                     ->sortable(),
@@ -50,11 +46,7 @@ class SentencesTable
             ->filters([
                 SelectFilter::make('difficulty')
                     ->label('Dificuldade')
-                    ->options([
-                        1 => 'Fácil',
-                        2 => 'Médio',
-                        3 => 'Difícil',
-                    ]),
+                    ->options(collect(DictationDifficulty::cases())->mapWithKeys(fn($case) => [$case->value => $case->label()])->toArray()),
             ])
             ->recordActions([
                 ViewAction::make(),

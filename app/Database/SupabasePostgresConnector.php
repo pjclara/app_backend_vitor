@@ -8,17 +8,13 @@ class SupabasePostgresConnector extends PostgresConnector
 {
     /**
      * Create a DSN string from a configuration.
-     * Adds Supabase project reference via options parameter.
+     * Note: For Supabase pooler, the username must be in format: postgres.project_ref
+     * This is configured in .env as DB_USERNAME=postgres.emwgjilzdxlvpkrvkhmc
      */
     protected function getDsn(array $config): string
     {
-        $dsn = parent::getDsn($config);
-
-        $ref = env('SUPABASE_DB_REF');
-        if ($ref) {
-            $dsn .= ";options='reference={$ref}'";
-        }
-
-        return $dsn;
+        return parent::getDsn($config);
     }
 }
+
+
