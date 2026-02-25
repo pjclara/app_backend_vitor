@@ -5,18 +5,18 @@ namespace App\Models;
 use App\Models\SupabaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProfessorStudent extends SupabaseModel
+class ProfissionalStudent extends SupabaseModel
 {
     /**
      * The table associated with the model.
      */
-    protected $table = 'professor_student';
+    protected $table = 'profissional_student';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'professor_id',
+        'profissional_id',
         'student_id'
     ];
 
@@ -27,25 +27,25 @@ class ProfessorStudent extends SupabaseModel
     {
         return [
             'id' => 'string',
-            'professor_id' => 'string',
+            'profissional_id' => 'string',
             'student_id' => 'string'
         ];
     }
 
     /**
-     * Get the professor that owns the ProfessorStudent.
+     * Get the profissional that owns the ProfissionalStudent.
      */
-    public function professor(): BelongsTo
+    public function profissional(): BelongsTo
     {
-        return $this->belongsTo(Professor::class, 'professor_id');
+        return $this->belongsTo(User::class, 'profissional_id')->where('role', 'profissional');
     }
 
     /**
-     * Get the student that owns the ProfessorStudent.
+     * Get the student that owns the ProfissionalStudent.
      */
     public function student(): BelongsTo
     {
-        return $this->belongsTo(Student::class, 'student_id');
+        return $this->belongsTo(User::class, 'student_id')->where('role', 'aluno');
     }
 
 }

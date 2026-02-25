@@ -11,20 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('professor_student', function (Blueprint $table) {
+        Schema::create('profissional_student', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('professor_id');
+            $table->uuid('profissional_id');
             $table->uuid('student_id');
             $table->timestamps();
             
-            $table->foreign('professor_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('profissional_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
             
             // Evitar duplicatas para a mesma associação
-            $table->unique(['professor_id', 'student_id']);
+            $table->unique(['profissional_id', 'student_id']);
             
             // Índices para melhor performance
-            $table->index('professor_id');
+            $table->index('profissional_id');
             $table->index('student_id');
         });
     }
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('professor_student');
+        Schema::dropIfExists('profissional_student');
     }
 };
