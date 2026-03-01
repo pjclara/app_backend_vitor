@@ -52,7 +52,7 @@ class ExercisesTable
             ])
             ->recordActions([
                 \Filament\Actions\Action::make('listen')
-                    ->label('Ouvir')
+                    ->label('Ouvir sdfsdf')
                     ->icon('heroicon-o-speaker-wave')
                     ->color('info')
                     ->action(function ($record, $livewire) {
