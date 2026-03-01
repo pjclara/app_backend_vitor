@@ -7,7 +7,9 @@ use App\Models\ExerciseWord;
 use App\Models\Syllable;
 use App\Models\Word;
 use App\Models\WordSyllable;
+use App\Services\AudioService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ExerciseProcessorService
 {
@@ -85,6 +87,12 @@ class ExerciseProcessorService
                 'words_json' => json_encode($wordsData),
             ]);
         });
+
+        // Gerar áudio para a frase completa (fora da transaction para não bloquear)
+        $this->generateSentenceAudio($exercise);
+
+        // Gerar áudio para cada palavra individual
+        $this->generateWordsAudio($exercise);
     }
 
     /**
@@ -119,6 +127,62 @@ class ExerciseProcessorService
         }
 
         return $wordModel;
+    }
+
+    /**
+     * Gera áudio TTS para a frase completa do exercício.
+     */
+    protected function generateSentenceAudio(Exercise $exercise): void
+    {
+        try {
+            $sentence = $exercise->sentence;
+            if (empty($sentence)) {
+                return;
+            }
+
+            // Gerar áudio da frase (audio_url_1)
+            $audioPath = AudioService::generateAndSave(
+                $sentence,
+                'pt-PT',
+                'sentences',
+                'exercise-' . $exercise->id
+            );
+
+            if ($audioPath) {
+                $exercise->update(['audio_url_1' => $audioPath]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Falha ao gerar áudio da frase do exercício ' . $exercise->id . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Gera áudio TTS para cada palavra do exercício.
+     */
+    protected function generateWordsAudio(Exercise $exercise): void
+    {
+        try {
+            $words = $exercise->words()->get();
+
+            foreach ($words as $word) {
+                // Saltar se a palavra já tem áudio
+                if (!empty($word->audio_url)) {
+                    continue;
+                }
+
+                $audioPath = AudioService::generateAndSave(
+                    $word->word,
+                    'pt-PT',
+                    'words'
+                );
+
+                if ($audioPath) {
+                    $word->update(['audio_url' => $audioPath]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Falha ao gerar áudio das palavras do exercício ' . $exercise->id . ': ' . $e->getMessage());
+        }
     }
 
     /**

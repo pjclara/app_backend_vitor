@@ -22,7 +22,9 @@ class Exercise extends SupabaseModel
         'words_json',
         'difficulty',
         'content',
-        'number'
+        'number',
+        'audio_url_1',
+        'audio_url_2',
     ];
 
     /**
