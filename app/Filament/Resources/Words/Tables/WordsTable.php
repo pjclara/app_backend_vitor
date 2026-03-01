@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class WordsTable
 {
@@ -38,13 +39,21 @@ class WordsTable
                     ->action(function ($record, $livewire) {
                         $audioUrl = $record->audio_url;
                         
-                        // Se não há áudio, tenta gerar
-                        if (empty($audioUrl)) {
+                        // Se tem URL mas ficheiro não existe ou não há URL, tenta gerar
+                        if (empty($audioUrl) || !Storage::disk('public')->exists(ltrim($audioUrl, '/'))) {
                             try {
+                                // Se tem URL mas ficheiro não existe, extrai o nome do ficheiro
+                                $filenamePrefix = null;
+                                if ($audioUrl) {
+                                    $filename = basename($audioUrl);
+                                    $filenamePrefix = str_replace('.mp3', '', $filename);
+                                }
+                                
                                 $audioUrl = AudioService::generateAndSave(
                                     $record->word,
                                     'pt-PT',
-                                    'words'
+                                    'words',
+                                    $filenamePrefix
                                 );
                                 
                                 if ($audioUrl) {

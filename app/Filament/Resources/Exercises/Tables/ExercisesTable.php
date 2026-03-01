@@ -12,6 +12,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ExercisesTable
 {
@@ -58,14 +59,21 @@ class ExercisesTable
                     ->action(function ($record, $livewire) {
                         $audioUrl = $record->audio_url_1;
                         
-                        // Se não há áudio, tenta gerar
-                        if (empty($audioUrl)) {
+                        // Se tem URL mas ficheiro não existe ou não há URL, tenta gerar
+                        if (empty($audioUrl) || !Storage::disk('public')->exists(ltrim($audioUrl, '/'))) {
                             try {
+                                // Se tem URL mas ficheiro não existe, extrai o nome do ficheiro
+                                $filenamePrefix = null;
+                                if ($audioUrl) {
+                                    $filename = basename($audioUrl);
+                                    $filenamePrefix = str_replace('.mp3', '', $filename);
+                                }
+                                
                                 $audioUrl = AudioService::generateAndSave(
                                     $record->sentence,
                                     'pt-PT',
                                     'sentences',
-                                    'exercise-' . $record->id
+                                    $filenamePrefix ?? 'exercise-' . $record->id
                                 );
                                 
                                 if ($audioUrl) {
@@ -75,12 +83,21 @@ class ExercisesTable
                                 // Gerar áudio para as palavras também
                                 $words = $record->words()->get();
                                 foreach ($words as $word) {
-                                    if (empty($word->audio_url)) {
+                                    // Se tem URL mas ficheiro não existe ou não há URL
+                                    if (empty($word->audio_url) || !Storage::disk('public')->exists(ltrim($word->audio_url, '/'))) {
                                         try {
+                                            // Se tem URL mas ficheiro não existe, extrai o nome do ficheiro
+                                            $wordFilenamePrefix = null;
+                                            if ($word->audio_url) {
+                                                $filename = basename($word->audio_url);
+                                                $wordFilenamePrefix = str_replace('.mp3', '', $filename);
+                                            }
+                                            
                                             $wordAudioUrl = AudioService::generateAndSave(
                                                 $word->word,
                                                 'pt-PT',
-                                                'words'
+                                                'words',
+                                                $wordFilenamePrefix
                                             );
                                             
                                             if ($wordAudioUrl) {
