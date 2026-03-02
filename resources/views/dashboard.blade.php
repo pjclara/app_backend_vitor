@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>Painel de Controle</title>
     <style>
         body {
             font-family: Arial, sans-serif;
